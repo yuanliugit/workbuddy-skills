@@ -12,7 +12,7 @@ git clone https://github.com/yuanliugit/workbuddy-skills.git ~/.workbuddy/skills
 
 日常同步：修改后 `git push`，另一台电脑 `git pull`。
 
-## 技能列表（34 个）
+## 技能列表（35 个）
 
 ### 银行授信审批体系
 | 技能 | 用途 |
@@ -21,7 +21,7 @@ git clone https://github.com/yuanliugit/workbuddy-skills.git ~/.workbuddy/skills
 | `work-analysis-loop` | 通用分析循环护栏，六层数据分级，防无限循环 |
 | `企业公开信息抓取` | A股/港股企业公开披露资料抓取，年报PDF数据提取 |
 | `现金流测算` | 项目偿债现金流测算（DSCR/CFADS），DebtFacility模型 |
-| `企业估值分析` | DCF+相对估值+SOTP三法交叉验证，WACC敏感性矩阵 |
+| `企业估值分析` | DCF+相对估值+SOTP+LBO+Merger Model五法交叉验证，WACC敏感性矩阵，IRR/MOIC分析 |
 | `盈利质量分析` | 季报beat/miss分析+分析师修正追踪，盈利稳定性预警 |
 | `investment-industry-research` | 投资导向行业研究，产业链上中下游全覆盖 |
 | `loop-engineering` | 六元改造框架：Trigger→State→Iteration→Verification→StopConditions→Handoff |
@@ -42,7 +42,7 @@ git clone https://github.com/yuanliugit/workbuddy-skills.git ~/.workbuddy/skills
 | `pdf-generator` | PDF文档生成 |
 | `ppt-generator` | PowerPoint演示文稿生成 |
 | `word-docx` | Word文档生成与编辑 |
-| `excel-xlsx` | Excel电子表格处理 |
+| `excel-xlsx` | Excel电子表格处理，含投行级金融建模规则（三表联动/DCF/LBO/M&A专属规范） |
 | `minimax-pdf` | 高质量PDF生成（注重视觉品质） |
 
 ### 发布与转换
@@ -58,7 +58,8 @@ git clone https://github.com/yuanliugit/workbuddy-skills.git ~/.workbuddy/skills
 |------|------|
 | `baoyu-translate` | 精翻/翻译（中英互译） |
 | `baoyu-format-markdown` | Markdown格式化 |
-| `humanizer` | AI文本人性化处理 |
+| `humanizer` | AI文本人性化处理（英文） |
+| `humanizer-zh` | 中文AI写作痕迹去除（24种通用模式+6种中文特有模式） |
 | `summarize` | 文本摘要提取 |
 
 ### 开发与工具
@@ -88,6 +89,19 @@ git clone https://github.com/yuanliugit/workbuddy-skills.git ~/.workbuddy/skills
 ---
 
 ## 更新日志
+
+### 2026-06-28 — 金融建模能力扩展与中文文本优化
+
+**新建 Skill（1个）**：
+- `humanizer-zh` v1.0.0 — 中文AI写作痕迹去除，24种通用AI模式+6种中文特有模式（高频词/宣传式结论/四字排比/破折号滥用/标题空心化/机械分段），与英文`humanizer`分工协同
+
+**Skill 升级（2个）**：
+- `企业估值分析` v1.1.0 → v1.2.0 — 新增LBO杠杆收购模型（Sources&Uses/债务分层/IRR/MOIC/5×5敏感性矩阵）和Merger Model并购增厚/稀释分析（Accretion/Dilution/支付方式敏感性/协同效应），原有DCF/相对估值/SOTP三法完整保留
+- `excel-xlsx` v1.0.2 → v1.1.0 — 新增Financial Modeling Domain Rules章节（投行颜色约定/三表联动架构/DCF·LBO·M&A专属规则/公式锚定规范/模型审计清单/中国市场Excel惯例），原有7条核心规则完整保留
+
+**优化原则**：所有变更均为纯追加扩展，现有技能内容零删减、零弱化。
+
+---
 
 ### 2026-06-28 — 大规模整合与六元改造
 
