@@ -87,4 +87,31 @@ git clone https://github.com/yuanliugit/workbuddy-skills.git ~/.workbuddy/skills
 
 ---
 
+## 更新日志
+
+### 2026-06-28 — 大规模整合与六元改造
+
+**新建 Skill（4个）**：
+- `work-analysis-loop` v1.1.0 — 通用分析循环护栏（六层数据分级 + 防无限循环）
+- `credit-review-workbench` v1.1.0 — 授信审查总调度入口（七型任务路由）
+- `investment-industry-research` v1.1.0 — 投资导向行业研究（产业链全覆盖）
+- `loop-engineering` v1.1.0 — 六元改造框架 + Python 代码库
+
+**授信体系 Skill 升级（4个）**：
+- `企业公开信息抓取` v3.3.0 → v3.5.0 — 护栏集成 + State断点恢复 + Handoff
+- `现金流测算` v1.1.0 → v1.2.0 — 护栏集成 + Trigger + Handoff
+- `企业估值分析` v1.0.0 → v1.1.0 — 护栏集成 + 六元改造
+- `盈利质量分析` v1.0.0 → v1.1.0 — 护栏集成 + 六元改造
+
+**loop-engineering 配套代码库**（`loop-engineering/references/`）：
+- `state_manager.py` — 统一 State 读写管理器（原子写入 + 损坏恢复）
+- `handoff_manager.py` — 停止包生成器（.handoff.json + HANDOFF.md）
+- `validator.py` — 六维验证器 V1-V6
+- `state-schema.json` — 统一 State Schema 定义
+
+**模板生成**：
+- 授信初审报告模板（非项目类授信）.docx
+- 项目融资初审报告模板（项目类授信）.docx
+
+---
 _最后更新：2026-06-28_
