@@ -1,0 +1,344 @@
+{
+  "$schema": "loop-engineering-state-v1.0.0",
+  "meta": {
+    "description": "统一 State Schema — 所有 loop-engineering 改造后的 Skill 共用此 schema",
+    "version": "1.0.0",
+    "date": "2026-06-28",
+    "file_name": ".state.json",
+    "location": "任务工作区根目录"
+  },
+  "base_fields": {
+    "task_id": {
+      "type": "string",
+      "required": true,
+      "format": "{SKILL前缀}-{MMDD}-{3位序号}",
+      "example": "WAL-0628-001",
+      "description": "唯一任务ID，Skill前缀：WAL=work-analysis-loop, CRW=credit-review-workbench, IIR=investment-industry-research, EPD=enterprise-public-disclosure, CFM=cash-flow-model, EVA=enterprise-valuation, EQS=earnings-quality-analysis"
+    },
+    "skill": {
+      "type": "string",
+      "required": true,
+      "example": "work-analysis-loop",
+      "description": "当前执行的 Skill 名称"
+    },
+    "skill_version": {
+      "type": "string",
+      "required": true,
+      "example": "1.0.0",
+      "description": "当前 Skill 版本号，用于兼容性检查"
+    },
+    "created_at": {
+      "type": "string",
+      "required": true,
+      "format": "ISO 8601",
+      "example": "2026-06-28T14:30:00+08:00",
+      "description": "任务创建时间"
+    },
+    "updated_at": {
+      "type": "string",
+      "required": true,
+      "format": "ISO 8601",
+      "example": "2026-06-28T15:45:00+08:00",
+      "description": "State 最后更新时间"
+    },
+    "stage": {
+      "type": "string",
+      "required": true,
+      "enum": ["INIT", "COLLECTING", "ANALYZING", "VERIFYING", "DELIVERING", "HANDOFF", "COMPLETED", "FAILED", "PAUSED"],
+      "example": "ANALYZING",
+      "description": "当前执行阶段"
+    },
+    "iteration": {
+      "type": "integer",
+      "required": true,
+      "min": 1,
+      "example": 3,
+      "description": "当前迭代轮次，从1开始"
+    },
+    "max_iterations": {
+      "type": "integer",
+      "required": false,
+      "default": 10,
+      "example": 10,
+      "description": "最大迭代轮次，防止无限循环"
+    },
+    "status": {
+      "type": "string",
+      "required": true,
+      "enum": ["RUNNING", "PAUSED", "COMPLETED", "FAILED", "WAITING_HUMAN"],
+      "example": "RUNNING",
+      "description": "当前任务状态"
+    },
+    "completed_steps": {
+      "type": "array",
+      "required": true,
+      "items": { "type": "string" },
+      "example": ["下载年报", "解析PDF", "提取财务数据"],
+      "description": "已完成步骤列表（用于断点恢复）"
+    },
+    "pending_steps": {
+      "type": "array",
+      "required": true,
+      "items": { "type": "string" },
+      "example": ["DCF估值", "敏感性分析", "生成报告"],
+      "description": "待执行步骤列表"
+    },
+    "evidence_index": {
+      "type": "object",
+      "required": true,
+      "example": {
+        "年报2023_P45": [120, 135, 142],
+        "招股书_CH8_P12": [88, 91]
+      },
+      "description": "证据索引：{来源描述: [行号/页码列表]}，所有关键数据的来源追溯"
+    },
+    "data_gaps": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": { "type": "string", "description": "缺失字段名" },
+          "reason": { "type": "string", "description": "缺失原因：未披露/无法访问/不适用" },
+          "action": { "type": "string", "description": "处理动作：标注为缺失/请求补充/使用行业均值替代" },
+          "marked_as": { "type": "string", "description": "在报告中标注为" }
+        }
+      },
+      "example": [
+        {
+          "field": "2023年经营现金流",
+          "reason": "未披露",
+          "action": "标注为缺失",
+          "marked_as": "【缺失：2023年经营现金流未披露】"
+        }
+      ],
+      "description": "缺失数据列表，绝对禁止当作0"
+    },
+    "warnings": {
+      "type": "array",
+      "required": false,
+      "items": { "type": "string" },
+      "example": ["WACC假设9.2%高于行业均值8.1%", "DSCR在悲观情景下为1.05，接近警戒线"],
+      "description": "当前警告列表（不影响执行，但需提示用户）"
+    },
+    "errors": {
+      "type": "array",
+      "required": false,
+      "items": { "type": "string" },
+      "example": ["PDF解析失败：文件加密", "yfinance API返回空数据"],
+      "description": "当前错误列表（影响执行，需要处理）"
+    },
+    "human_decisions": {
+      "type": "object",
+      "required": false,
+      "example": {
+        "growth_rate": "用户确认3%",
+        "wacc": "用户确认使用9.2%（高于行业均值）"
+      },
+      "description": "需要人工决策的点，以及用户的决定"
+    },
+    "consecutive_verify_failures": {
+      "type": "integer",
+      "required": false,
+      "default": 0,
+      "description": "连续验证失败次数，达到3次触发停止条件S3"
+    },
+    "stop_reason": {
+      "type": "string",
+      "required": false,
+      "enum": [null, "S1", "S2", "S3", "S4", "S5", "S6", "S7"],
+      "example": null,
+      "description": "停止原因编码（null=未停止）"
+    },
+    "handoff_path": {
+      "type": "string",
+      "required": false,
+      "example": "/path/to/HANDOFF.md",
+      "description": "Handoff 文件路径（停止后生成）"
+    },
+    "deliverables": {
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "path": { "type": "string" },
+          "status": { "type": "string", "enum": ["pending", "generating", "completed", "failed"] }
+        }
+      },
+      "description": "交付物清单"
+    }
+  },
+  "skill_extensions": {
+    "work-analysis-loop": {
+      "description": "通用分析循环护栏 — 无额外字段，直接使用 base_fields",
+      "extra_fields": {}
+    },
+    "credit-review-workbench": {
+      "description": "授信审查总调度 — 需追踪子 Skill 调度状态",
+      "extra_fields": {
+        "task_type": {
+          "type": "string",
+          "enum": ["非项目类授信", "项目类授信", "行业研究", "公开披露", "估值分析", "盈利质量", "其他"],
+          "description": "任务类型（用于路由）"
+        },
+        "dispatched_skills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "skill": { "type": "string" },
+              "status": { "type": "string", "enum": ["pending", "running", "completed", "failed"] },
+              "output_path": { "type": "string" },
+              "handoff_path": { "type": "string" }
+            }
+          },
+          "description": "已调度的子 Skill 状态"
+        },
+        "cross_verification": {
+          "type": "object",
+          "description": "跨 Skill 交叉验证结果"
+        }
+      }
+    },
+    "enterprise-public-disclosure": {
+      "description": "企业公开信息抓取 — 需追踪四阶段交付版本",
+      "extra_fields": {
+        "delivery_version": {
+          "type": "string",
+          "enum": ["V1", "V2", "FINAL"],
+          "description": "当前交付版本"
+        },
+        "stages_completed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "example": ["COLLECTING", "EXTRACTING", "DELIVERING_V1"],
+          "description": "已完成阶段"
+        },
+        "stages_pending": {
+          "type": "array",
+          "items": { "type": "string" },
+          "example": ["DELIVERING_V2", "COMPARING", "FINALIZING"],
+          "description": "待执行阶段"
+        },
+        "verification_results": {
+          "type": "object",
+          "description": "各阶段验证结果"
+        }
+      }
+    },
+    "cash-flow-model": {
+      "description": "现金流测算 — 需追踪 Excel 生成进度",
+      "extra_fields": {
+        "current_sheet": {
+          "type": "string",
+          "example": "Sheet2_运营损益",
+          "description": "当前正在生成的 Excel Sheet 名"
+        },
+        "current_row": {
+          "type": "integer",
+          "description": "当前正在写入的行号（用于崩溃恢复）"
+        },
+        "excel_path": {
+          "type": "string",
+          "description": "已生成的 Excel 文件路径"
+        },
+        "dscr_results": {
+          "type": "object",
+          "description": "DSCR计算结果缓存"
+        }
+      }
+    },
+    "enterprise-valuation": {
+      "description": "企业估值分析 — 需追踪三法各自完成状态",
+      "extra_fields": {
+        "methods_status": {
+          "type": "object",
+          "properties": {
+            "dcf": { "type": "object", "description": "DCF法状态" },
+            "relative": { "type": "object", "description": "相对估值法状态" },
+            "sotp": { "type": "object", "description": "SOTP法状态" }
+          },
+          "description": "三法各自完成状态"
+        },
+        "cross_validation": {
+          "type": "object",
+          "properties": {
+            "method_spread": { "type": "string", "description": "三法结果差异百分比" },
+            "spread_threshold": { "type": "string", "description": "差异阈值" },
+            "status": { "type": "string", "enum": ["acceptable", "warning", "error"] }
+          }
+        }
+      }
+    },
+    "earnings-quality-analysis": {
+      "description": "盈利质量分析 — 需追踪数据来源",
+      "extra_fields": {
+        "data_source": {
+          "type": "string",
+          "enum": ["yfinance", "pdf_manual", "mixed"],
+          "description": "当前使用的数据来源"
+        },
+        "data_source_coverage": {
+          "type": "object",
+          "description": "各数据项的来源覆盖情况"
+        },
+        "part_completed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "example": ["PartA", "PartB"],
+          "description": "已完成的部分（PartA/B/C）"
+        }
+      }
+    },
+    "investment-industry-research": {
+      "description": "投资行业研究 — 需追踪七步框架当前步骤",
+      "extra_fields": {
+        "current_step": {
+          "type": "integer",
+          "description": "七步框架当前步骤编号（1-7）"
+        },
+        "steps_completed": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "example": [1, 2, 3],
+          "description": "已完成步骤编号"
+        },
+        "industry_chain": {
+          "type": "object",
+          "description": "产业链图谱缓存"
+        },
+        "companies_covered": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "已覆盖的上市公司列表"
+        }
+      }
+    }
+  },
+  "read_write_rules": {
+    "when_to_read": [
+      "Skill 启动时（第一行代码）",
+      "每轮迭代开始前",
+      "人工介入后恢复时"
+    ],
+    "when_to_write": [
+      "每轮迭代结束后（验证完成，状态已更新）",
+      "人工决策后（立即写入，不等待本轮结束）",
+      "触发停止条件时（写入最终状态，然后生成 Handoff）"
+    ],
+    "atomicity": "写入时使用临时文件 + 原子替换（防止写入中途崩溃导致文件损坏）",
+    "example_write_sequence": [
+      "1. 将 State 写入 .state.json.tmp",
+      "2. os.replace('.state.json.tmp', '.state.json')",
+      "3. 确认写入成功"
+    ]
+  },
+  "recovery_rules": {
+    "if_state_file_exists": "读取并恢复；检查 updated_at 距离现在是否超过 24h（可能过时）",
+    "if_state_file_corrupted": "备份损坏文件为 .state.json.corrupted，从头开始",
+    "if_state_file_missing": "从头开始，生成新 task_id",
+    "if_skill_version_mismatch": "提示用户 Skill 已升级，是否从头开始或手动迁移 State"
+  }
+}

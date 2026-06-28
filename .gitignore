@@ -1,0 +1,30 @@
+# OS files
+.DS_Store
+Thumbs.db
+._*
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+
+# Node
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temp files
+*.tmp
+*.bak
